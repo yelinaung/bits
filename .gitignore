@@ -1,0 +1,17 @@
+# Compiled binaries (no file extension, matching source names)
+arr
+p
+play
+playground
+a1
+s
+smart_s
+
+# Debug symbols
+*.dSYM/
+
+# Object files
+*.o
+
+# Editor/OS cruft
+.DS_Store
