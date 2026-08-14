@@ -74,6 +74,40 @@ enum { munit_mode_run = 0, munit_mode_submit = 1 };
 #define assert_ptr(a, op, b, msg)                                              \
   munit_bootdev_assert_(const void *, "%p", a, op, b, msg)
 
+/* The munit_assert_* sized forms take a trailing description too. Same
+ * treatment: undefine upstream's 3-argument versions and rebuild them.
+ * Unsigned sized types print as hex, since call sites use them for byte and
+ * bit layouts where "0x34 != 0x1234" reads better than "52 != 4660". */
+#undef munit_assert_size
+#undef munit_assert_int8
+#undef munit_assert_uint8
+#undef munit_assert_int16
+#undef munit_assert_uint16
+#undef munit_assert_int32
+#undef munit_assert_uint32
+#undef munit_assert_int64
+#undef munit_assert_uint64
+
+#define munit_assert_size(a, op, b, msg)                                       \
+  munit_bootdev_assert_(size_t, "%" MUNIT_SIZE_MODIFIER "u", a, op, b, msg)
+
+#define munit_assert_int8(a, op, b, msg)                                       \
+  munit_bootdev_assert_(munit_int8_t, "%" PRIi8, a, op, b, msg)
+#define munit_assert_uint8(a, op, b, msg)                                      \
+  munit_bootdev_assert_(munit_uint8_t, "0x%02" PRIx8, a, op, b, msg)
+#define munit_assert_int16(a, op, b, msg)                                      \
+  munit_bootdev_assert_(munit_int16_t, "%" PRIi16, a, op, b, msg)
+#define munit_assert_uint16(a, op, b, msg)                                     \
+  munit_bootdev_assert_(munit_uint16_t, "0x%04" PRIx16, a, op, b, msg)
+#define munit_assert_int32(a, op, b, msg)                                      \
+  munit_bootdev_assert_(munit_int32_t, "%" PRIi32, a, op, b, msg)
+#define munit_assert_uint32(a, op, b, msg)                                     \
+  munit_bootdev_assert_(munit_uint32_t, "0x%08" PRIx32, a, op, b, msg)
+#define munit_assert_int64(a, op, b, msg)                                      \
+  munit_bootdev_assert_(munit_int64_t, "%" PRIi64, a, op, b, msg)
+#define munit_assert_uint64(a, op, b, msg)                                     \
+  munit_bootdev_assert_(munit_uint64_t, "0x%016" PRIx64, a, op, b, msg)
+
 #define assert_string_equal(a, b, msg)                                         \
   do {                                                                         \
     const char *munit_lhs_ = (a);                                              \
