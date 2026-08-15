@@ -61,8 +61,26 @@ enum { munit_mode_run = 0, munit_mode_submit = 1 };
                    munit_rhs_);                                                \
   } while (0)
 
-#define assert_int(a, op, b, msg)                                              \
+/* Both spellings exist at call sites for the scalar compares too. Define the
+ * munit_-prefixed form and alias the bare one, so the two cannot drift.
+ * Note munit_assert_ptr is deliberately left alone: upstream builds
+ * munit_assert_null/not_null/ptr_equal on top of it, and widening it to four
+ * arguments would break those. munit_assert_not_null is written out separately
+ * below instead. */
+#undef munit_assert_int
+#undef munit_assert_not_null
+
+#define munit_assert_int(a, op, b, msg)                                        \
   munit_bootdev_assert_(int, "%d", a, op, b, msg)
+
+#define munit_assert_not_null(ptr, msg)                                        \
+  do {                                                                         \
+    const void *munit_ptr_ = (ptr);                                            \
+    if (munit_ptr_ == NULL)                                                    \
+      munit_errorf("%s (pointer is NULL)", (msg));                             \
+  } while (0)
+
+#define assert_int(a, op, b, msg) munit_assert_int(a, op, b, msg)
 #define assert_uint(a, op, b, msg)                                             \
   munit_bootdev_assert_(unsigned int, "%u", a, op, b, msg)
 #define assert_long(a, op, b, msg)                                             \
@@ -87,6 +105,7 @@ enum { munit_mode_run = 0, munit_mode_submit = 1 };
 #undef munit_assert_uint32
 #undef munit_assert_int64
 #undef munit_assert_uint64
+#undef munit_assert_string_equal
 
 #define munit_assert_size(a, op, b, msg)                                       \
   munit_bootdev_assert_(size_t, "%" MUNIT_SIZE_MODIFIER "u", a, op, b, msg)
@@ -108,12 +127,17 @@ enum { munit_mode_run = 0, munit_mode_submit = 1 };
 #define munit_assert_uint64(a, op, b, msg)                                     \
   munit_bootdev_assert_(munit_uint64_t, "0x%016" PRIx64, a, op, b, msg)
 
-#define assert_string_equal(a, b, msg)                                         \
+/* Both spellings of the string compare take a trailing description. Call sites
+ * use munit_assert_string_equal and the bare assert_string_equal alias
+ * interchangeably, so define one and forward the other. */
+#define munit_assert_string_equal(a, b, msg)                                   \
   do {                                                                         \
     const char *munit_lhs_ = (a);                                              \
     const char *munit_rhs_ = (b);                                              \
     if (strcmp(munit_lhs_, munit_rhs_) != 0)                                   \
       munit_errorf("%s (\"%s\" != \"%s\")", (msg), munit_lhs_, munit_rhs_);    \
   } while (0)
+
+#define assert_string_equal(a, b, msg) munit_assert_string_equal(a, b, msg)
 
 #endif /* MUNIT_BOOTDEV_H */

@@ -1,9 +1,10 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -fsanitize=address -Wconversion
+CFLAGS = -Wall -Wextra -fsanitize=address -Wconversion -g
 
 MUNIT_DIR = vendor/munit
 
 # Usage: make run p.c
+#        make run free_exercise_main.c SRCS="free_exercise.c"
 #        make test test_smart_s.c SRCS="smart_s.c"
 #        make test test_smart_s.c SRCS="smart_s.c" ARGS=--no-fork
 ifneq (,$(filter run test,$(firstword $(MAKECMDGOALS))))
@@ -14,7 +15,7 @@ ifneq (,$(filter run test,$(firstword $(MAKECMDGOALS))))
 endif
 
 run:
-	$(CC) $(CFLAGS) -o /tmp/$(basename $(FILE)) $(FILE)
+	$(CC) $(CFLAGS) -o /tmp/$(basename $(FILE)) $(FILE) $(SRCS)
 	/tmp/$(basename $(FILE))
 
 test:
