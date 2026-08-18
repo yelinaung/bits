@@ -22,13 +22,20 @@
 enum { munit_mode_run = 0, munit_mode_submit = 1 };
 
 /* munit_case(MODE, name, { body }) -> a MunitResult function.
- * The trailing semicolon at the call site lands on the empty declaration. */
-#define munit_case(mode, name, body)                                           \
+ * The trailing semicolon at the call site lands on the empty declaration.
+ *
+ * The body is taken as __VA_ARGS__, not a single parameter. The preprocessor
+ * only treats parentheses as grouping, never braces, so a body that contains
+ * a brace initializer such as
+ *     token_t tok = {"hello", 1, 1};
+ * splits into extra macro arguments and fails with "passed 5 arguments, but
+ * takes just 3". Variadic collection puts the commas back together. */
+#define munit_case(mode, name, ...)                                            \
   static MunitResult name(const MunitParameter params[], void *user_data) {    \
     (void)params;                                                              \
     (void)user_data;                                                           \
     (void)(mode);                                                              \
-    body return MUNIT_OK;                                                      \
+    __VA_ARGS__ return MUNIT_OK;                                               \
   }                                                                            \
   struct munit_case_semicolon_##name
 
@@ -81,6 +88,15 @@ enum { munit_mode_run = 0, munit_mode_submit = 1 };
   } while (0)
 
 #define assert_int(a, op, b, msg) munit_assert_int(a, op, b, msg)
+/* Call sites use assert_ptr_not_null and assert_not_null interchangeably for
+ * the same check. Upstream's munit_assert_ptr_not_null stays 1-argument. */
+#define assert_not_null(ptr, msg) munit_assert_not_null(ptr, msg)
+#define assert_ptr_not_null(ptr, msg) munit_assert_not_null(ptr, msg)
+
+#undef munit_assert_ptr_not_equal
+#define munit_assert_ptr_not_equal(a, b, msg)                                  \
+  munit_bootdev_assert_(const void *, "%p", a, !=, b, msg)
+#define assert_ptr_not_equal(a, b, msg) munit_assert_ptr_not_equal(a, b, msg)
 #define assert_uint(a, op, b, msg)                                             \
   munit_bootdev_assert_(unsigned int, "%u", a, op, b, msg)
 #define assert_long(a, op, b, msg)                                             \
@@ -97,6 +113,8 @@ enum { munit_mode_run = 0, munit_mode_submit = 1 };
  * Unsigned sized types print as hex, since call sites use them for byte and
  * bit layouts where "0x34 != 0x1234" reads better than "52 != 4660". */
 #undef munit_assert_size
+#undef munit_assert_float
+#undef munit_assert_double
 #undef munit_assert_int8
 #undef munit_assert_uint8
 #undef munit_assert_int16
@@ -109,6 +127,14 @@ enum { munit_mode_run = 0, munit_mode_submit = 1 };
 
 #define munit_assert_size(a, op, b, msg)                                       \
   munit_bootdev_assert_(size_t, "%" MUNIT_SIZE_MODIFIER "u", a, op, b, msg)
+
+/* float and double both widen to double when passed to munit_errorf, so both
+ * print with "%f". Exact comparison, matching upstream: use these only for
+ * values that are computed exactly, such as a zeroed field. */
+#define munit_assert_float(a, op, b, msg)                                      \
+  munit_bootdev_assert_(float, "%f", a, op, b, msg)
+#define munit_assert_double(a, op, b, msg)                                     \
+  munit_bootdev_assert_(double, "%f", a, op, b, msg)
 
 #define munit_assert_int8(a, op, b, msg)                                       \
   munit_bootdev_assert_(munit_int8_t, "%" PRIi8, a, op, b, msg)
