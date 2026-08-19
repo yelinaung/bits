@@ -1,7 +1,9 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -fsanitize=address -Wconversion -g
 
+VENDOR_DIR = vendor
 MUNIT_DIR = vendor/munit
+INCLUDES = -I$(VENDOR_DIR) -I$(MUNIT_DIR)
 
 # Usage: make run p.c
 #        make run free_exercise_main.c SRCS="free_exercise.c"
@@ -15,11 +17,11 @@ ifneq (,$(filter run test,$(firstword $(MAKECMDGOALS))))
 endif
 
 run:
-	$(CC) $(CFLAGS) -o /tmp/$(basename $(FILE)) $(FILE) $(SRCS)
+	$(CC) $(CFLAGS) $(INCLUDES) -o /tmp/$(basename $(FILE)) $(FILE) $(SRCS)
 	/tmp/$(basename $(FILE))
 
 test:
-	$(CC) $(CFLAGS) -I$(MUNIT_DIR) -o /tmp/$(basename $(FILE)) \
+	$(CC) $(CFLAGS) $(INCLUDES) -o /tmp/$(basename $(FILE)) \
 		$(FILE) $(SRCS) $(MUNIT_DIR)/munit.c
 	/tmp/$(basename $(FILE)) $(ARGS)
 

@@ -88,6 +88,11 @@ enum { munit_mode_run = 0, munit_mode_submit = 1 };
   } while (0)
 
 #define assert_int(a, op, b, msg) munit_assert_int(a, op, b, msg)
+
+/* Boolean checks take no description at call sites, matching upstream arity. */
+#define assert_true(expr) munit_assert_true(expr)
+#define assert_false(expr) munit_assert_false(expr)
+
 /* Call sites use assert_ptr_not_null and assert_not_null interchangeably for
  * the same check. Upstream's munit_assert_ptr_not_null stays 1-argument. */
 #define assert_not_null(ptr, msg) munit_assert_not_null(ptr, msg)
