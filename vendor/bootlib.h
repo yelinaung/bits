@@ -11,6 +11,9 @@
  * counted. malloc and free are redirected to counting wrappers by macro, so
  * the calling code needs no other change. Files that must reach the real
  * allocator define BOOTLIB_INTERNAL before including.
+ *
+ * Not thread safe. The counters are plain globals, which is sufficient for
+ * single threaded test binaries.
  */
 
 #ifndef BOOTLIB_H
@@ -22,13 +25,16 @@
 void *boot_malloc(size_t size);
 void boot_free(void *ptr);
 
-/* Number of allocations made through boot_malloc that are not yet freed. */
+/* Number of tracked allocations that are not yet freed. */
 size_t boot_alloc_count(void);
+
+/* Total bytes of tracked allocations that are not yet freed. */
+size_t boot_alloc_size(void);
 
 /* True when every tracked allocation has been released. */
 bool boot_all_freed(void);
 
-/* Reset the counter. Useful between test cases. */
+/* Drop all bookkeeping and zero the counters. Useful between test cases. */
 void boot_reset(void);
 
 #ifndef BOOTLIB_INTERNAL
