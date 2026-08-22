@@ -23,6 +23,7 @@
 #include <stdlib.h>
 
 void *boot_malloc(size_t size);
+void *boot_realloc(void *ptr, size_t size);
 void boot_free(void *ptr);
 
 /* Number of tracked allocations that are not yet freed. */
@@ -30,6 +31,11 @@ size_t boot_alloc_count(void);
 
 /* Total bytes of tracked allocations that are not yet freed. */
 size_t boot_alloc_size(void);
+
+/* Number of boot_realloc calls so far, and the size requested by the most
+ * recent one. Both are cumulative and are only cleared by boot_reset. */
+size_t boot_realloc_count(void);
+size_t boot_last_realloc_size(void);
 
 /* True when every tracked allocation has been released. */
 bool boot_all_freed(void);
@@ -39,6 +45,7 @@ void boot_reset(void);
 
 #ifndef BOOTLIB_INTERNAL
 #define malloc(size) boot_malloc(size)
+#define realloc(ptr, size) boot_realloc(ptr, size)
 #define free(ptr) boot_free(ptr)
 #endif
 

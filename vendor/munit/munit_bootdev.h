@@ -102,6 +102,13 @@ enum { munit_mode_run = 0, munit_mode_submit = 1 };
 #define munit_assert_ptr_not_equal(a, b, msg)                                  \
   munit_bootdev_assert_(const void *, "%p", a, !=, b, msg)
 #define assert_ptr_not_equal(a, b, msg) munit_assert_ptr_not_equal(a, b, msg)
+
+/* The *_equal spellings fix the operator and take only the two operands. */
+#undef munit_assert_ptr_equal
+#define munit_assert_ptr_equal(a, b, msg)                                      \
+  munit_bootdev_assert_(const void *, "%p", a, ==, b, msg)
+#define assert_ptr_equal(a, b, msg) munit_assert_ptr_equal(a, b, msg)
+#define assert_int_equal(a, b, msg) munit_assert_int(a, ==, b, msg)
 #define assert_uint(a, op, b, msg)                                             \
   munit_bootdev_assert_(unsigned int, "%u", a, op, b, msg)
 #define assert_long(a, op, b, msg)                                             \
@@ -132,6 +139,7 @@ enum { munit_mode_run = 0, munit_mode_submit = 1 };
 
 #define munit_assert_size(a, op, b, msg)                                       \
   munit_bootdev_assert_(size_t, "%" MUNIT_SIZE_MODIFIER "u", a, op, b, msg)
+#define assert_size(a, op, b, msg) munit_assert_size(a, op, b, msg)
 
 /* float and double both widen to double when passed to munit_errorf, so both
  * print with "%f". Exact comparison, matching upstream: use these only for
