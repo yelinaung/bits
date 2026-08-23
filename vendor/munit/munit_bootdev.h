@@ -76,6 +76,7 @@ enum { munit_mode_run = 0, munit_mode_submit = 1 };
  * below instead. */
 #undef munit_assert_int
 #undef munit_assert_not_null
+#undef munit_assert_null
 
 #define munit_assert_int(a, op, b, msg)                                        \
   munit_bootdev_assert_(int, "%d", a, op, b, msg)
@@ -85,6 +86,13 @@ enum { munit_mode_run = 0, munit_mode_submit = 1 };
     const void *munit_ptr_ = (ptr);                                            \
     if (munit_ptr_ == NULL)                                                    \
       munit_errorf("%s (pointer is NULL)", (msg));                             \
+  } while (0)
+
+#define munit_assert_null(ptr, msg)                                            \
+  do {                                                                         \
+    const void *munit_ptr_ = (ptr);                                            \
+    if (munit_ptr_ != NULL)                                                    \
+      munit_errorf("%s (pointer is %p, expected NULL)", (msg), munit_ptr_);    \
   } while (0)
 
 #define assert_int(a, op, b, msg) munit_assert_int(a, op, b, msg)
@@ -97,6 +105,8 @@ enum { munit_mode_run = 0, munit_mode_submit = 1 };
  * the same check. Upstream's munit_assert_ptr_not_null stays 1-argument. */
 #define assert_not_null(ptr, msg) munit_assert_not_null(ptr, msg)
 #define assert_ptr_not_null(ptr, msg) munit_assert_not_null(ptr, msg)
+#define assert_null(ptr, msg) munit_assert_null(ptr, msg)
+#define assert_ptr_null(ptr, msg) munit_assert_null(ptr, msg)
 
 #undef munit_assert_ptr_not_equal
 #define munit_assert_ptr_not_equal(a, b, msg)                                  \
@@ -148,6 +158,8 @@ enum { munit_mode_run = 0, munit_mode_submit = 1 };
   munit_bootdev_assert_(float, "%f", a, op, b, msg)
 #define munit_assert_double(a, op, b, msg)                                     \
   munit_bootdev_assert_(double, "%f", a, op, b, msg)
+#define assert_float(a, op, b, msg) munit_assert_float(a, op, b, msg)
+#define assert_double(a, op, b, msg) munit_assert_double(a, op, b, msg)
 
 #define munit_assert_int8(a, op, b, msg)                                       \
   munit_bootdev_assert_(munit_int8_t, "%" PRIi8, a, op, b, msg)
