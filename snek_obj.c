@@ -5,6 +5,65 @@
 
 #include "bootlib.h"
 
+// NOTE: forward declaration of the function below
+snek_object_t *_new_snek_object(void);
+
+void refcount_free(snek_object_t *obj) {
+  if (obj == NULL) {
+    return;
+  }
+  switch (obj->kind) {
+  case INTEGER:
+  case FLOAT:
+    break;
+  case STRING:
+    free(obj->data.v_string);
+    break;
+  case ARRAY:
+    for (size_t i = 0; i < obj->data.v_array.size; i++) {
+      refcount_dec(obj->data.v_array.elements[i]);
+    }
+    free(obj->data.v_array.elements);
+    break;
+  case VECTOR3:
+    refcount_dec(obj->data.v_vector3.x);
+    refcount_dec(obj->data.v_vector3.y);
+    refcount_dec(obj->data.v_vector3.z);
+    break;
+  default:
+    return;
+  }
+  free(obj);
+}
+
+void refcount_dec(snek_object_t *obj) {
+  if (obj == NULL) {
+    return;
+  }
+  obj->refcount--;
+  if (obj->refcount == 0) {
+    refcount_free(obj);
+    return;
+  }
+  return;
+}
+
+void refcount_inc(snek_object_t *obj) {
+  if (obj == NULL) {
+    return;
+  }
+  obj->refcount++;
+}
+
+snek_object_t *_new_snek_object(void) {
+  snek_object_t *new_obj = calloc(1, sizeof(snek_object_t));
+  if (new_obj == NULL) {
+    return NULL;
+  }
+  new_obj->refcount = 1;
+  return new_obj;
+}
+
 snek_object_t *snek_add(snek_object_t *a, snek_object_t *b) {
   if (a == NULL || b == NULL) {
     return NULL;
@@ -132,19 +191,27 @@ bool snek_array_set(snek_object_t *snek_obj, size_t index,
     return false;
   }
 
+  refcount_inc(value);
+
+  snek_object_t *existing = snek_obj->data.v_array.elements[index];
+  if (existing != NULL) {
+    refcount_dec(existing);
+  }
+
+  // overwrite
   snek_obj->data.v_array.elements[index] = value;
   return true;
 }
 
 snek_object_t *new_snek_array(size_t size) {
-  snek_object_t *obj = malloc(sizeof(snek_object_t));
+  snek_object_t *obj = _new_snek_object();
   if (obj == NULL) {
     return NULL;
   }
 
-  snek_object_t **elements = calloc(sizeof(snek_object_t), size);
+  snek_object_t **elements = calloc(sizeof(snek_object_t *), size);
   if (elements == NULL) {
-    free(elements);
+    // free(elements);
     return NULL;
   }
   obj->kind = ARRAY;
@@ -158,17 +225,20 @@ snek_object_t *new_snek_vector3(snek_object_t *x, snek_object_t *y,
     return NULL;
   }
 
-  snek_object_t *obj = malloc(sizeof(snek_object_t));
+  snek_object_t *obj = _new_snek_object();
   if (obj == NULL) {
     return NULL;
   }
   obj->kind = VECTOR3;
-  obj->data.v_vector3 = (sneck_vector_t){.x = x, .y = y, .z = z};
+  obj->data.v_vector3 = (snek_vector_t){.x = x, .y = y, .z = z};
+  refcount_inc(x);
+  refcount_inc(y);
+  refcount_inc(z);
   return obj;
 }
 
 snek_object_t *new_snek_string(char *value) {
-  snek_object_t *obj = malloc(sizeof(snek_object_t));
+  snek_object_t *obj = _new_snek_object();
   if (obj == NULL) {
     return NULL;
   }
@@ -187,7 +257,7 @@ snek_object_t *new_snek_string(char *value) {
 }
 
 snek_object_t *new_snek_float(float value) {
-  snek_object_t *obj = malloc(sizeof(snek_object_t));
+  snek_object_t *obj = _new_snek_object();
   if (obj == NULL) {
     return NULL;
   }
@@ -197,8 +267,7 @@ snek_object_t *new_snek_float(float value) {
 }
 
 snek_object_t *new_snek_integer(int value) {
-  // Use malloc to allocate heap memory for a new pointer to a snek_object_t.
-  snek_object_t *obj = malloc(sizeof(snek_object_t));
+  snek_object_t *obj = _new_snek_object();
   if (obj == NULL) {
     // If the allocation fails, return NULL.
     return NULL;

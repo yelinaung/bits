@@ -5,6 +5,7 @@
  * BOOTLIB_INTERNAL define above takes effect, the wrappers below would call
  * themselves. Undefining here keeps this file on the real allocator. */
 #undef malloc
+#undef calloc
 #undef realloc
 #undef free
 
@@ -22,6 +23,12 @@ typedef struct BootRecord {
 } boot_record_t;
 
 static boot_record_t *boot_records = NULL;
+
+/* Records of blocks already released. boot_is_freed needs to distinguish "was
+ * allocated here and then freed" from "never seen", so freed records are moved
+ * here rather than discarded. Cleared by boot_reset, which also runs at exit so
+ * this bookkeeping is not reported as a leak. */
+static boot_record_t *boot_freed_records = NULL;
 static size_t boot_outstanding = 0;
 static size_t boot_bytes = 0;
 static size_t boot_reallocs = 0;
@@ -41,17 +48,23 @@ static boot_record_t *boot_take_record(void *ptr) {
   return NULL;
 }
 
-void *boot_malloc(size_t size) {
-  void *ptr = malloc(size);
-  if (ptr == NULL) {
-    return NULL;
-  }
+static void boot_cleanup(void) { boot_reset(); }
 
+/* Registered on first use so the record lists are released at exit. */
+static void boot_arm_cleanup(void) {
+  static bool armed = false;
+  if (!armed) {
+    armed = true;
+    atexit(boot_cleanup);
+  }
+}
+
+/* Add a live record for ptr. A failure to allocate the record leaves the
+ * block untracked rather than miscounted. */
+static void boot_track(void *ptr, size_t size) {
   boot_record_t *rec = malloc(sizeof(boot_record_t));
   if (rec == NULL) {
-    /* Cannot track it, so do not count it either. The allocation itself is
-     * still valid and is returned to the caller. */
-    return ptr;
+    return;
   }
 
   rec->ptr = ptr;
@@ -61,6 +74,28 @@ void *boot_malloc(size_t size) {
 
   boot_outstanding++;
   boot_bytes += size;
+}
+
+void *boot_malloc(size_t size) {
+  boot_arm_cleanup();
+
+  void *ptr = malloc(size);
+  if (ptr == NULL) {
+    return NULL;
+  }
+  boot_track(ptr, size);
+  return ptr;
+}
+
+void *boot_calloc(size_t nmemb, size_t size) {
+  boot_arm_cleanup();
+
+  void *ptr = calloc(nmemb, size);
+  if (ptr == NULL) {
+    return NULL;
+  }
+  /* nmemb * size cannot overflow here: calloc already rejected that case. */
+  boot_track(ptr, nmemb * size);
   return ptr;
 }
 
@@ -118,7 +153,9 @@ void boot_free(void *ptr) {
   if (dead != NULL) {
     boot_outstanding--;
     boot_bytes -= dead->size;
-    free(dead);
+    /* Keep the record so boot_is_freed can report on this pointer. */
+    dead->next = boot_freed_records;
+    boot_freed_records = dead;
   }
 
   /* An untracked pointer, from a file that does not include this header, is
@@ -134,16 +171,41 @@ size_t boot_realloc_count(void) { return boot_reallocs; }
 
 size_t boot_last_realloc_size(void) { return boot_last_realloc; }
 
+bool boot_is_freed(const void *ptr) {
+  if (ptr == NULL) {
+    return false;
+  }
+
+  /* A recycled address is live again, so the live list is checked first. */
+  for (boot_record_t *rec = boot_records; rec != NULL; rec = rec->next) {
+    if (rec->ptr == ptr) {
+      return false;
+    }
+  }
+
+  for (boot_record_t *rec = boot_freed_records; rec != NULL; rec = rec->next) {
+    if (rec->ptr == ptr) {
+      return true;
+    }
+  }
+  return false;
+}
+
 bool boot_all_freed(void) { return boot_outstanding == 0; }
 
-void boot_reset(void) {
-  boot_record_t *rec = boot_records;
+static void boot_free_record_list(boot_record_t *rec) {
   while (rec != NULL) {
     boot_record_t *next = rec->next;
     free(rec);
     rec = next;
   }
+}
+
+void boot_reset(void) {
+  boot_free_record_list(boot_records);
+  boot_free_record_list(boot_freed_records);
   boot_records = NULL;
+  boot_freed_records = NULL;
   boot_outstanding = 0;
   boot_bytes = 0;
   boot_reallocs = 0;

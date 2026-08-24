@@ -23,6 +23,7 @@
 #include <stdlib.h>
 
 void *boot_malloc(size_t size);
+void *boot_calloc(size_t nmemb, size_t size);
 void *boot_realloc(void *ptr, size_t size);
 void boot_free(void *ptr);
 
@@ -37,6 +38,11 @@ size_t boot_alloc_size(void);
 size_t boot_realloc_count(void);
 size_t boot_last_realloc_size(void);
 
+/* True when ptr was allocated through this library and has since been freed.
+ * False while ptr is still live, and false for pointers never tracked here.
+ * If an address is recycled by a later allocation, live wins over freed. */
+bool boot_is_freed(const void *ptr);
+
 /* True when every tracked allocation has been released. */
 bool boot_all_freed(void);
 
@@ -45,6 +51,7 @@ void boot_reset(void);
 
 #ifndef BOOTLIB_INTERNAL
 #define malloc(size) boot_malloc(size)
+#define calloc(nmemb, size) boot_calloc(nmemb, size)
 #define realloc(ptr, size) boot_realloc(ptr, size)
 #define free(ptr) boot_free(ptr)
 #endif
