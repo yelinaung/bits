@@ -6,8 +6,86 @@
 #include "bootlib.h"
 
 snek_object_t *snek_add(snek_object_t *a, snek_object_t *b) {
-  // ?
-  return a;
+  if (a == NULL || b == NULL) {
+    return NULL;
+  }
+
+  switch (a->kind) {
+  case INTEGER:
+    switch (b->kind) {
+    case INTEGER:
+      // a is int, b is int
+      return new_snek_integer(a->data.v_int + b->data.v_int);
+    case FLOAT:
+      // a is int, b is float
+      return new_snek_float((float)a->data.v_int + b->data.v_float);
+    default:
+      return NULL;
+    }
+  case FLOAT:
+    switch (b->kind) {
+    case INTEGER:
+      // a is float, b is int
+      return new_snek_float(a->data.v_float + (float)b->data.v_int);
+    case FLOAT:
+      // a is float, b is float
+      return new_snek_float(a->data.v_float + b->data.v_float);
+    default:
+      return NULL;
+    }
+  case STRING:
+    switch (b->kind) {
+    case STRING:
+      // Calculate the length of the new string by combining the length of the
+      // two strings (properly handling the null terminator)
+      size_t new_str_len =
+          strlen(a->data.v_string) + strlen(b->data.v_string) + 1;
+      char *temp_str = calloc(sizeof(char), new_str_len);
+      // Use strcat to append the data from a and then b to the temporary
+      // string.
+      strcat(temp_str, a->data.v_string);
+      strcat(temp_str, b->data.v_string);
+      // Create a new_snek_string and pass in the temporary string.
+      snek_object_t *n = new_snek_string(temp_str);
+      // Free the memory for the temporary string
+      free(temp_str);
+      return n;
+    default:
+      return NULL;
+    }
+  case VECTOR3:
+    switch (b->kind) {
+    case VECTOR3:
+      return new_snek_vector3(
+          snek_add(a->data.v_vector3.x, b->data.v_vector3.x),
+          snek_add(a->data.v_vector3.y, b->data.v_vector3.y),
+          snek_add(a->data.v_vector3.z, b->data.v_vector3.z));
+    default:
+      return NULL;
+    }
+  case ARRAY:
+    switch (b->kind) {
+    case ARRAY:
+      snek_object_t *s =
+          new_snek_array(a->data.v_array.size + b->data.v_array.size);
+      // Iterate over each index in "a" and use snek_array_set and
+      // snek_array_get to copy the values from "a" to the new array.
+      for (size_t i = 0; i < a->data.v_array.size; i++) {
+        snek_object_t *x = snek_array_get(a, i);
+        snek_array_set(s, i, x);
+      }
+      // Do the same for "b".
+      for (size_t i = 0; i < b->data.v_array.size; i++) {
+        snek_object_t *x = snek_array_get(b, i);
+        snek_array_set(s, a->data.v_array.size + i, x);
+      }
+      return s;
+    default:
+      return NULL;
+    }
+  default:
+    return NULL;
+  }
 }
 
 int snek_length(snek_object_t *obj) {
@@ -20,11 +98,11 @@ int snek_length(snek_object_t *obj) {
   case FLOAT:
     return 1;
   case STRING:
-    return strlen(obj->data.v_string);
+    return (int)strlen(obj->data.v_string);
   case VECTOR3:
     return 3;
   case ARRAY:
-    return obj->data.v_array.size;
+    return (int)obj->data.v_array.size;
   default:
     return -1;
   }
