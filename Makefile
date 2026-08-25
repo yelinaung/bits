@@ -1,6 +1,8 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -fsanitize=address -Wconversion -g
 
+BIN = /tmp/$(subst /,_,$(basename $(FILE)))
+
 VENDOR_DIR = vendor
 MUNIT_DIR = vendor/munit
 INCLUDES = -I$(VENDOR_DIR) -I$(MUNIT_DIR)
@@ -17,13 +19,13 @@ ifneq (,$(filter run test,$(firstword $(MAKECMDGOALS))))
 endif
 
 run:
-	$(CC) $(CFLAGS) $(INCLUDES) -o /tmp/$(basename $(FILE)) $(FILE) $(SRCS)
-	/tmp/$(basename $(FILE))
+	$(CC) $(CFLAGS) $(INCLUDES) -o $(BIN) $(FILE) $(SRCS)
+	$(BIN)
 
 test:
-	$(CC) $(CFLAGS) $(INCLUDES) -o /tmp/$(basename $(FILE)) \
+	$(CC) $(CFLAGS) $(INCLUDES) -o $(BIN) \
 		$(FILE) $(SRCS) $(MUNIT_DIR)/munit.c
-	/tmp/$(basename $(FILE)) $(ARGS)
+	$(BIN) $(ARGS)
 
 clean:
 	rm -f /tmp/a1 /tmp/arr /tmp/p /tmp/play /tmp/playground
