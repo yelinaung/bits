@@ -67,16 +67,16 @@ int main(void) {
   //
   int a = 100;
   int b = 200;
-  printf("a = %d, b = %d\n", a, b);
+  printf("[values] a = %d, b = %d\n", a, b);
 
   // & works on the objects that have a memory values
   // &x           // ✅ x is a variable, it lives somewhere
   // &5           // ❌ error — 5 is a literal, it has no address
   // &(a + b)     // ❌ error — the sum is a temporary, no address
-  printf("a = %p, b = %p\n", &a, &b);
+  printf("[pointers] a = %p, b = %p\n", &a, &b);
 
   // getting back the value
-  printf("a = %d, b = %d\n", *&a, *&b);
+  printf("[getting back values via pointers] a = %d, b = %d\n", *&a, *&b);
 
   // declaration
   // * is part of the "type"

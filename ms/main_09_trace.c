@@ -1,3 +1,4 @@
+#include "assert.h"
 #include "bootlib.h"
 #include "munit.h"
 #include "sneknew.h"

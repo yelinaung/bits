@@ -3,12 +3,67 @@
 #include "stack.h"
 #include <stdbool.h>
 
+void vm_collect_garbage(vm_t *vm) {
+  mark(vm);
+  trace(vm);
+  sweep(vm);
+}
+
+void sweep(vm_t *vm) {
+  for (size_t i = 0; i < vm->objects->count; i++) {
+    snek_object_t *obj = vm->objects->data[i];
+    if (obj->is_marked == true) {
+      obj->is_marked = false;
+    } else {
+      //  free the object and set the data at that position in the stack to NULL
+      snek_object_free(obj);
+      vm->objects->data[i] = NULL;
+    }
+  }
+  stack_remove_nulls(vm->objects);
+}
+
 void trace(vm_t *vm) {
-  // ?
+  stack_t *gray_objects = stack_new(8);
+  if (gray_objects == NULL) {
+    return;
+  }
+  for (size_t i = 0; i < vm->objects->count; i++) {
+    snek_object_t *obj = vm->objects->data[i];
+    if (obj->is_marked) {
+      stack_push(gray_objects, obj);
+    }
+  }
+  while (gray_objects->count > 0) {
+    snek_object_t *obj = stack_pop(gray_objects);
+    trace_blacken_object(gray_objects, obj);
+  }
+  stack_free(gray_objects);
 }
 
 void trace_blacken_object(stack_t *gray_objects, snek_object_t *obj) {
-  // ?
+  if (gray_objects == NULL || obj == NULL) {
+    return;
+  }
+
+  switch (obj->kind) {
+  case INTEGER:
+  case FLOAT:
+  case STRING:
+    break;
+  case VECTOR3:
+    trace_mark_object(gray_objects, obj->data.v_vector3.x);
+    trace_mark_object(gray_objects, obj->data.v_vector3.y);
+    trace_mark_object(gray_objects, obj->data.v_vector3.z);
+    break;
+  case ARRAY:
+    for (size_t i = 0; i < obj->data.v_array.size; i++) {
+      trace_mark_object(gray_objects, obj->data.v_array.elements[i]);
+    }
+    break;
+  default:
+    break;
+  }
 }
 
 void trace_mark_object(stack_t *gray_objects, snek_object_t *obj) {
@@ -80,3 +135,5 @@ void frame_free(frame_t *frame) {
   stack_free(frame->references);
   free(frame);
 }
+
+frame_t *vm_frame_pop(vm_t *vm) { return stack_pop(vm->frames); }

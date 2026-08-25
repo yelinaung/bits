@@ -18,6 +18,7 @@ void vm_track_object(vm_t *vm, snek_object_t *obj);
 
 void vm_frame_push(vm_t *vm, frame_t *frame);
 frame_t *vm_new_frame(vm_t *vm);
+frame_t *vm_frame_pop(vm_t *vm);
 
 void frame_free(frame_t *frame);
 

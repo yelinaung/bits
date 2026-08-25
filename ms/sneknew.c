@@ -1,4 +1,5 @@
 #include "sneknew.h"
+#include "bootlib.h"
 #include "snekobject.h"
 #include "vm.h"
 #include <stdlib.h>
