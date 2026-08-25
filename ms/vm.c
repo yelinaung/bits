@@ -1,6 +1,23 @@
 #include "vm.h"
 #include "snekobject.h"
 #include "stack.h"
+#include <stdbool.h>
+
+void trace(vm_t *vm) {
+  // ?
+}
+
+void trace_blacken_object(stack_t *gray_objects, snek_object_t *obj) {
+  // ?
+}
+
+void trace_mark_object(stack_t *gray_objects, snek_object_t *obj) {
+  if (obj == NULL || obj->is_marked == true) {
+    return;
+  }
+  obj->is_marked = true;
+  stack_push(gray_objects, obj);
+}
 
 void mark(vm_t *vm) {
   // Iterate over each frame in the VM
@@ -9,8 +26,8 @@ void mark(vm_t *vm) {
     // Iterate over each references object in each frame
     for (size_t j = 0; j < f->references->count; j++) {
       // Mark the objects as is_marked = true
-      snek_object_t *x = f->references->data[j];
-      x->is_marked = true;
+      snek_object_t *obj = f->references->data[j];
+      obj->is_marked = true;
     }
   }
 }

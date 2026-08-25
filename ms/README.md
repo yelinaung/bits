@@ -1,6 +1,6 @@
-The Two Stacks
+The Two Stacks in VM
 
-Both vm->frames and vm->objects are the same C type, stack_t *. They mean opposite things.
+Both `vm->frames` and `vm->objects` are the same C type, `stack_t *`. They mean opposite things.
 
 ```
 vm_t
@@ -20,11 +20,8 @@ vm_t
  └── objects  : stack_t*   ── a stack OF snek_object_t*
 ```
 
-vm->objects is a census of every object that exists. Every new_snek_* in sneknew.c (file:///home/yelinaung/code/bits/ms/sneknew.c) ends with vm_track_object(vm, obj), so nothing escapes the list. The VM owns these. Only vm_free and sweep may free them.
+`vm->objects` is a census of every object that exists. Every `new_snek_*` in `sneknew.c` ends with `vm_track_object(vm, obj)`, so nothing escapes the list. The VM owns these. Only `vm_free` and sweep may free them.
 
-vm->frames is the call stack. One frame_t is one function activation.
+`vm->frames` is the call stack. One `frame_t` is one function activation.
 
-frame->references is the set of objects that frame can currently see — its local variables, in effect. These pointers are borrowed. The same object appears in both vm->objects and possibly several frame->references.
-
-```
-```
+`frame->references` is the set of objects that frame can currently see, the local variables, in effect. These pointers are borrowed. The same object appears in both `vm->objects` and possibly several `frame->references`.
