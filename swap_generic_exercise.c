@@ -17,6 +17,7 @@ void swap(void *vp1, void *vp2, size_t size) {
     exit(1);
 
   // Use memcpy to shuffle the data around.
+  // NOTE: memcpy(dest, source)
   memcpy(v, vp1, size);
   memcpy(vp1, vp2, size);
   memcpy(vp2, v, size);

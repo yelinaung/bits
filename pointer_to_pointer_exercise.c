@@ -12,6 +12,7 @@ void allocate_int(int **pointer_pointer, int value) {
   }
   // Update the pointer that pointer_pointer is pointing at
   // to hold the newly allocated memory address.
+  // i.e. dereferece the pointer_pointer to v
   *pointer_pointer = v;
 
   // Set the raw value of the integer that pointer_pointer now points to

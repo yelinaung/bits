@@ -69,6 +69,7 @@ int main(void) {
   int b = 200;
   printf("[values] a = %d, b = %d\n", a, b);
 
+  // NOTE:
   // & works on the objects that have a memory values
   // &x           // ✅ x is a variable, it lives somewhere
   // &5           // ❌ error — 5 is a literal, it has no address
@@ -84,8 +85,9 @@ int main(void) {
   int *b_ptr = &b;
   printf("a = %p, b = %p\n", (void *)a_ptr, (void *)b_ptr);
 
-  // statement
-  // * is dereferencing - go to the address that a_ptr holds and set the new
+  // NOTE: statement
+  // * is dereferencing - go to the address [getting back values via pointers]
+  // that a_ptr holds and set the new
   // value
   *a_ptr = 300;
   printf("a = %d, b = %d\n", a, b);
