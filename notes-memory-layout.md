@@ -1,7 +1,5 @@
 # Memory Layout: Unions, Fixed-Width Integers, Alignment
 
----
-
 ## 1. Unions
 
 A union stores one value at a time. Every member starts at offset 0, so the
@@ -74,8 +72,6 @@ Every `switch (obj->kind)` in the codebase keeps the tag and the union in
 agreement. A missing `break` between two cases reads one member and writes
 another. That bug freed `v_array.elements` on a `VECTOR3` object.
 
----
-
 ## 2. The Color Union
 
 ```c
@@ -136,8 +132,6 @@ Pick the member that matches how the data arrived.
 
 Shifts operate on the value, not on the byte order, so they behave identically
 on every machine.
-
----
 
 ## 3. Fixed-Width Integers
 
@@ -211,8 +205,6 @@ typedef union PacketHeader {
   uint8_t raw[8];
 } packet_header_t;
 ```
-
----
 
 ## 4. Alignment
 
@@ -303,8 +295,6 @@ offsetof(S, member)    // byte offset of a member within a struct
 ```
 
 Print all three with `%zu`.
-
----
 
 ## 5. Type Sizes
 
