@@ -2,7 +2,7 @@ The Two Stacks in VM
 
 Both `vm->frames` and `vm->objects` are the same C type, `stack_t *`. They mean opposite things.
 
-```
+```text
 vm_t
  ├── objects  ──►  [obj, obj, obj, obj, ...]     the heap census — VM OWNS these
  └── frames   ──►  [frame, frame, frame]         the call stack
