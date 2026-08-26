@@ -1,6 +1,6 @@
 #include <stdio.h>
 int main() {
-  const int pool_size = 1024 * 10;
+  const int pool_size = 1024 * 10; // 10 kibibytes
   char snek_pool[pool_size];
 
   snek_pool[0] = 's';

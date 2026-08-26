@@ -20,6 +20,18 @@ typedef union AgeOrName {
 
 `sizeof(age_or_name_t)` is 8, the size of the pointer.
 
+`char *` is 8 bytes on x86-64, which is a pointer that holds a 64-bit address and an int is 4 bytes.
+The union has to fit its largest member, so 8.
+```
+
+offset:   0    1    2    3    4    5    6    7
+        +----+----+----+----+----+----+----+----+
+        |      age (int)    |     unused        |
+        +----+----+----+----+----+----+----+----+
+        |             name (char *)             |
+        +----+----+----+----+----+----+----+----+
+```
+
 ### The rule that matters
 
 Read the member you wrote. Writing `.age` overwrites whatever `.name` held,
@@ -275,3 +287,23 @@ offsetof(S, member)    // byte offset of a member within a struct
 ```
 
 Print all three with `%zu`.
+
+## Type and sizes
+
+| Type | Size (bytes)* |
+| :--- | :--- |
+| `char` | 1 |
+| `unsigned char` | 1 |
+| `signed char` | 1 |
+| `short` | 2 |
+| `unsigned short` | 2 |
+| `int` | 2 or 4 |
+| `unsigned int` | 2 or 4 |
+| `long` | 4 or 8 |
+| `unsigned long` | 4 |
+| `long long` | 8 |
+| `unsigned long long` | 8 |
+| `float` | 4 |
+| `double` | 8 |
+| `long double` | 10, 12 or 16 |
+| `_Bool` | 1 |
