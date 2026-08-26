@@ -290,20 +290,20 @@ Print all three with `%zu`.
 
 ## Type and sizes
 
-| Type | Size (bytes)* |
-| :--- | :--- |
-| `char` | 1 |
-| `unsigned char` | 1 |
-| `signed char` | 1 |
-| `short` | 2 |
-| `unsigned short` | 2 |
-| `int` | 2 or 4 |
-| `unsigned int` | 2 or 4 |
-| `long` | 4 or 8 |
-| `unsigned long` | 4 |
-| `long long` | 8 |
-| `unsigned long long` | 8 |
-| `float` | 4 |
-| `double` | 8 |
-| `long double` | 10, 12 or 16 |
-| `_Bool` | 1 |
+| Type | Size (bytes)* | Size (bits)* |
+| :--- | :--- | :--- |
+| `char` | 1 | 8 |
+| `unsigned char` | 1 | 8 |
+| `signed char` | 1 | 8 |
+| `short` | 2 | 16 |
+| `unsigned short` | 2 | 16 |
+| `int` | 2 or 4 | 16 or 32 |
+| `unsigned int` | 2 or 4 | 16 or 32 |
+| `long` | 4 or 8 | 32 or 64 |
+| `unsigned long` | 4 | 32 |
+| `long long` | 8 | 64 |
+| `unsigned long long` | 8 | 64 |
+| `float` | 4 | 32 |
+| `double` | 8 | 64 |
+| `long double` | 10, 12 or 16 | 80, 96 or 128 |
+| `_Bool` | 1 | 8 |
