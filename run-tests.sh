@@ -68,6 +68,9 @@ TESTS=(
   "ms/main_08_mark.c|$MS_SRCS"
   "ms/main_09_trace.c|$MS_SRCS"
   "ms/main_10_sweep.c|$MS_SRCS"
+
+  # Others
+  "stack_ex_tests.c|stack_ex.c"
 )
 
 # Tests known to fail. A failure here is reported but does not fail the run.

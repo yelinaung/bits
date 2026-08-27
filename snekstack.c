@@ -58,6 +58,10 @@
 //   stack->count += 1;
 // }
 
+// NOTE: this returns 'void *' a pointer to unknown type
+// function below with normal 'void' returns nothing
+// void   f(void);   // f returns nothing, and takes no parameters
+// void   *p;        // p is a pointer to an object of unspecified type
 void *stack_pop(stack_t *stack) {
   // If the stack has no elements, return NULL.
   if (stack->count == 0) {
@@ -83,12 +87,13 @@ void stack_free(stack_t *stack) {
 // BOOT.DEV ONE
 void stack_push(stack_t *stack, void *obj) {
   if (stack->count == stack->capacity) {
+    // double the capacity
     stack->capacity *= 2;
+    // NOTE: here we need the newly doubled capacity size
     void **temp = realloc(stack->data, stack->capacity * sizeof(void *));
     if (temp == NULL) {
       stack->capacity /= 2;
-
-      exit(1);
+      return;
     }
     stack->data = temp;
   }
@@ -105,6 +110,8 @@ stack_t *stack_new(size_t capacity) {
 
   stack->count = 0;
   stack->capacity = capacity;
+  // NOTE: capacity number of void * pointers
+  // Not just void pointer
   stack->data = malloc(stack->capacity * sizeof(void *));
   if (stack->data == NULL) {
     free(stack);

@@ -136,6 +136,8 @@ snek_object_t *snek_add(snek_object_t *a, snek_object_t *b) {
       // Do the same for "b".
       for (size_t i = 0; i < b->data.v_array.size; i++) {
         snek_object_t *x = snek_array_get(b, i);
+        // NOTE: the tricky part is here, we need to offset the existing items
+        // then set the new item
         snek_array_set(s, a->data.v_array.size + i, x);
       }
       return s;
@@ -211,7 +213,7 @@ snek_object_t *new_snek_array(size_t size) {
 
   snek_object_t **elements = calloc(sizeof(snek_object_t *), size);
   if (elements == NULL) {
-    // free(elements);
+    free(obj);
     return NULL;
   }
   obj->kind = ARRAY;
