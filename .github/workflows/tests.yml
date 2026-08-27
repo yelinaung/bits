@@ -1,0 +1,24 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show compiler version
+        run: gcc --version
+
+      # Ubuntu 24.04 runners raise ASLR entropy past what AddressSanitizer
+      # supports, which aborts every binary at startup. Lower it before the
+      # build. Harmless on images that do not need it.
+      - name: Make ASan usable
+        run: sudo sysctl -w vm.mmap_rnd_bits=28
+
+      - name: Build and run the test suites
+        run: ./run-tests.sh
