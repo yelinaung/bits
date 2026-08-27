@@ -15,8 +15,9 @@ void sweep(vm_t *vm) {
     if (obj->is_marked == true) {
       obj->is_marked = false;
     } else {
-      //  free the object and set the data at that position in the stack to NULL
+      // free the object and
       snek_object_free(obj);
+      // set the data at that position in the stack to NULL
       vm->objects->data[i] = NULL;
     }
   }
