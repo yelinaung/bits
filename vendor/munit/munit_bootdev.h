@@ -95,6 +95,10 @@ enum { munit_mode_run = 0, munit_mode_submit = 1 };
       munit_errorf("%s (pointer is %p, expected NULL)", (msg), munit_ptr_);    \
   } while (0)
 
+#undef munit_assert_char
+#define munit_assert_char(a, op, b, msg)                                       \
+  munit_bootdev_assert_(char, "%c", a, op, b, msg)
+
 #define assert_int(a, op, b, msg) munit_assert_int(a, op, b, msg)
 
 /* Boolean checks take no description at call sites, matching upstream arity. */
@@ -125,8 +129,7 @@ enum { munit_mode_run = 0, munit_mode_submit = 1 };
   munit_bootdev_assert_(long, "%ld", a, op, b, msg)
 #define assert_ulong(a, op, b, msg)                                            \
   munit_bootdev_assert_(unsigned long, "%lu", a, op, b, msg)
-#define assert_char(a, op, b, msg)                                             \
-  munit_bootdev_assert_(char, "%c", a, op, b, msg)
+#define assert_char(a, op, b, msg) munit_assert_char(a, op, b, msg)
 #define assert_ptr(a, op, b, msg)                                              \
   munit_bootdev_assert_(const void *, "%p", a, op, b, msg)
 
